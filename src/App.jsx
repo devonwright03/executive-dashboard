@@ -25,13 +25,14 @@ const INITIAL_TEAMS = [
   { name: "Team 1", utilCurrent: "", utilNext: "", margin: "" },
   { name: "Team 2", utilCurrent: "", utilNext: "", margin: "" },
   { name: "Team 3", utilCurrent: "", utilNext: "", margin: "" },
+  { name: "Team 4", utilCurrent: "", utilNext: "", margin: "" },
 ];
 
 const EMPTY = {
   period: "",
   revenueActual: "", revenueTarget: "",
   ebitdaActual: "", ebitdaTarget: "",
-  arTotal: "", arOver30: "",
+  arOver30Pct: "",
   pipelineNB: "", pipelineNBTarget: "",
   pipelineExp: "", pipelineExpTarget: "",
   forecastNB: "", forecastExp: "",
@@ -138,7 +139,7 @@ export default function App() {
       revTarget: num(form.revenueTarget),
       ebitdaActual: num(form.ebitdaActual),
       ebitdaTarget: num(form.ebitdaTarget),
-      arPct: arPct,
+      arPct: num(form.arOver30Pct),
       pipelineTotal: totalPipeline,
     };
     setSnapshots(prev => [...prev, snap]);
@@ -197,15 +198,8 @@ export default function App() {
           </div>
 
           <SectionHead title="Accounts Receivable" color="#E17055" />
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-            <Field label="Total AR Balance" prefix="$" value={form.arTotal} onChange={v => set("arTotal", v)} />
-            <Field label="AR Over 30 Days" prefix="$" value={form.arOver30} onChange={v => set("arOver30", v)} />
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <label style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>AR >30 Days % of Total</label>
-              <div style={{ padding: "7px 10px", fontSize: 13, border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-md)", background: "var(--color-background-secondary)", color: arPct != null ? ragColor(vsTarget(0, arPct > 15 ? 1 : -1), false) : "var(--color-text-secondary)", fontWeight: arPct != null ? 500 : 400 }}>
-                {arPct != null ? fmtPct(arPct) : "Auto-calculated"}
-              </div>
-            </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <Field label="Global AR >30 Days Late (% of Total AR)" suffix="%" value={form.arOver30Pct} onChange={v => set("arOver30Pct", v)} placeholder="0.0" />
           </div>
 
           <SectionHead title="Utilization & Client Margin by Team" color="#00B894" />
@@ -224,14 +218,16 @@ export default function App() {
           ))}
 
           <SectionHead title="Sales Pipeline vs Target" color="#FDCB6E" />
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 10 }}>
-            <Field label="New Business Pipeline" prefix="$" value={form.pipelineNB} onChange={v => set("pipelineNB", v)} />
-            <Field label="New Business Target" prefix="$" value={form.pipelineNBTarget} onChange={v => set("pipelineNBTarget", v)} />
-            <Field label="Expansion Pipeline" prefix="$" value={form.pipelineExp} onChange={v => set("pipelineExp", v)} />
-            <Field label="Expansion Target" prefix="$" value={form.pipelineExpTarget} onChange={v => set("pipelineExpTarget", v)} />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <Field label="New Business — Pipeline" prefix="$" value={form.pipelineNB} onChange={v => set("pipelineNB", v)} />
+            <Field label="New Business — Target" prefix="$" value={form.pipelineNBTarget} onChange={v => set("pipelineNBTarget", v)} />
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
+            <Field label="Expansion — Pipeline" prefix="$" value={form.pipelineExp} onChange={v => set("pipelineExp", v)} />
+            <Field label="Expansion — Target" prefix="$" value={form.pipelineExpTarget} onChange={v => set("pipelineExpTarget", v)} />
           </div>
 
-          <SectionHead title="QTD Sales Forecast" color="#FDCB6E" />
+          <SectionHead title="Sales Forecast This Quarter" color="#FDCB6E" />
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <Field label="Forecast — New Business" prefix="$" value={form.forecastNB} onChange={v => set("forecastNB", v)} />
             <Field label="Forecast — Expansions" prefix="$" value={form.forecastExp} onChange={v => set("forecastExp", v)} />
@@ -239,7 +235,7 @@ export default function App() {
 
           <SectionHead title="Qualified Marketing Opportunities" color="#00B894" />
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <Field label="Qual. Marketing Opps (count)" value={form.qualOpps} onChange={v => set("qualOpps", v)} placeholder="38" />
+            <Field label="Qual. Marketing Opps" value={form.qualOpps} onChange={v => set("qualOpps", v)} placeholder="38" />
             <Field label="Qual. Marketing Opps Target" value={form.qualOppsTarget} onChange={v => set("qualOppsTarget", v)} placeholder="45" />
           </div>
 
@@ -265,18 +261,17 @@ export default function App() {
           <div style={{ background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)", padding: "14px 16px" }}>
             <div style={{ fontSize: 12, color: "var(--color-text-secondary)", marginBottom: 8 }}>Global AR — Aging</div>
             <div style={{ display: "flex", gap: 24, flexWrap: "wrap", fontSize: 13 }}>
-              <div><span style={{ color: "var(--color-text-secondary)" }}>Total AR </span><strong>{fmt(num(form.arTotal))}</strong></div>
-              <div><span style={{ color: "var(--color-text-secondary)" }}>Over 30 days </span><strong>{fmt(num(form.arOver30))}</strong></div>
               <div>
-                <span style={{ color: "var(--color-text-secondary)" }}>% of Total </span>
-                <strong style={{ color: arPct != null ? (arPct > 20 ? "var(--color-text-danger)" : arPct > 12 ? "var(--color-text-warning)" : "var(--color-text-success)") : "var(--color-text-secondary)" }}>
-                  {arPct != null ? fmtPct(arPct) : "—"}
+                <span style={{ color: "var(--color-text-secondary)" }}>AR &gt;30 Days Late </span>
+                <strong style={{ color: num(form.arOver30Pct) != null ? (num(form.arOver30Pct) > 20 ? "var(--color-text-danger)" : num(form.arOver30Pct) > 12 ? "var(--color-text-warning)" : "var(--color-text-success)") : "var(--color-text-secondary)" }}>
+                  {num(form.arOver30Pct) != null ? fmtPct(num(form.arOver30Pct)) : "—"}
                 </strong>
+                <span style={{ color: "var(--color-text-secondary)", fontSize: 11, marginLeft: 4 }}>of Total AR</span>
               </div>
             </div>
-            {arPct != null && (
+            {num(form.arOver30Pct) != null && (
               <div style={{ marginTop: 10, height: 8, background: "var(--color-background-secondary)", borderRadius: 4, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: Math.min(arPct, 100) + "%", background: arPct > 20 ? "#E17055" : arPct > 12 ? "#FDCB6E" : "#00B894", borderRadius: 4 }} />
+                <div style={{ height: "100%", width: Math.min(num(form.arOver30Pct), 100) + "%", background: num(form.arOver30Pct) > 20 ? "#E17055" : num(form.arOver30Pct) > 12 ? "#FDCB6E" : "#00B894", borderRadius: 4 }} />
               </div>
             )}
           </div>
@@ -330,7 +325,7 @@ export default function App() {
           {/* Forecast + Mktg */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <div style={{ background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)", padding: "14px 16px" }}>
-              <div style={{ fontSize: 12, color: "var(--color-text-secondary)", marginBottom: 10 }}>QTD Sales Forecast</div>
+              <div style={{ fontSize: 12, color: "var(--color-text-secondary)", marginBottom: 10 }}>Sales Forecast This Quarter</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}><span style={{ color: "var(--color-text-secondary)" }}>New Business</span><strong>{fmt(num(form.forecastNB))}</strong></div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}><span style={{ color: "var(--color-text-secondary)" }}>Expansions</span><strong>{fmt(num(form.forecastExp))}</strong></div>
