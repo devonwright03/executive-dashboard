@@ -235,8 +235,8 @@ export default function App() {
 
           <SectionHead title="Qualified Marketing Opportunities" color="#00B894" />
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <Field label="Qual. Marketing Opps" value={form.qualOpps} onChange={v => set("qualOpps", v)} placeholder="38" />
-            <Field label="Qual. Marketing Opps Target" value={form.qualOppsTarget} onChange={v => set("qualOppsTarget", v)} placeholder="45" />
+            <Field label="Qual. Marketing Opps — Actual" value={form.qualOpps} onChange={v => set("qualOpps", v)} placeholder="38" />
+            <Field label="Qual. Marketing Opps — Target" value={form.qualOppsTarget} onChange={v => set("qualOppsTarget", v)} placeholder="45" />
           </div>
 
           <div style={{ marginTop: 24, display: "flex", justifyContent: "flex-end" }}>
